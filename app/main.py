@@ -30,7 +30,8 @@ def analytics_query(req: AnalyticsRequest):
             raise ValueError("No valid GA4 metrics found")
 
         # 2. Determine report mode
-        mode = "realtime" if parsed.get("is_realtime") else "core"
+        logger.info(f"Identified is_realtime is {parsed.get("is_realtime")}")
+        mode = "realtime" if eval(parsed.get("is_realtime")) else "core"
         # 3. Validate + auto-repair schema
         metrics, dimensions = validate_with_auto_repair(
             client,  # LLM client is created inside repair function
@@ -46,23 +47,35 @@ def analytics_query(req: AnalyticsRequest):
         rows = execute_report(parsed, req.propertyId)
 
         # 5. Summarize results
-        if mode.lower()=='core':
-            summary = summarize(req.query, rows, metrics, dimensions, [parsed["start_date"],parsed['end_date']])
-        else:
+        if eval(parsed.get("is_realtime")):
             summary = summarize(req.query, rows[0], metrics, dimensions, rows[1])
+            return {
+                "metadata": {
+                    "propertyId": req.propertyId,
+                    "mode": mode,
+                    "metrics": metrics,
+                    "dimensions": dimensions,
+                    "duration": rows[1],
+                    "page_path": parsed.get("page_path")
+                },
+                "data": rows,
+                "summary": summary
+            }
+        else:
+            summary = summarize(req.query, rows, metrics, dimensions, [parsed["start_date"],parsed['end_date']])
 
-        return {
-            "metadata": {
-                "propertyId": req.propertyId,
-                "mode": mode,
-                "metrics": metrics,
-                "dimensions": dimensions,
-                "duration": rows[1],
-                "page_path": parsed.get("page_path")
-            },
-            "data": rows,
-            "summary": summary
-        }
+            return {
+                "metadata": {
+                    "propertyId": req.propertyId,
+                    "mode": mode,
+                    "metrics": metrics,
+                    "dimensions": dimensions,
+                    "duration": [parsed["start_date"],parsed['end_date']],
+                    "page_path": parsed.get("page_path")
+                },
+                "data": rows,
+                "summary": summary
+            }
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -1,7 +1,7 @@
 from app.ga4_client import *
 
 def execute_report(parsed_query, property_id):
-    if parsed_query.get("is_realtime"):
+    if eval(parsed_query.get("is_realtime")):
         return run_realtime_report(
             property_id=property_id,
             metrics=parsed_query["metrics"],

@@ -326,6 +326,7 @@ def validate_with_auto_repair(
     mode: str = "core",
     retries: int = 1
 ):
+    logger.info(f"Identified Mode is {mode}")
     try:
         if mode == "realtime":
             logger.info(f"Identified Mode is {mode}")
