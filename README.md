@@ -56,14 +56,14 @@ The system combines **LLM-based reasoning**, **rule-based fallbacks**, and **str
 ## 📁 Repository Structure
 
 .
-├── app/
-│   ├── main.py                
-│   ├── nl_parser.py           
-│   ├── ga4_client.py           
-│   ├── ga4_schema_validator.py 
-│   ├── summarizer.py           
-│   └── validator.py            
-├── credentials.json           
+├── app
+│   ├── main.py
+│   ├── nl_parser.py
+│   ├── ga4_client.py
+│   ├── ga4_schema_validator.py
+│   ├── summarizer.py
+│   └── validator.py
+├── credentials.json
 ├── requirements.txt
 ├── deploy.sh
 └── README.md
