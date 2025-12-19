@@ -22,7 +22,7 @@ The system combines **LLM-based reasoning**, **rule-based fallbacks**, and **str
 
 ### Realtime Analytics
 - Live data from the **last 30–60 minutes**
-- Automatic detection of realtime intent
+- Automatic detection of `realtime` intent
 - Uses `runRealtimeReport`
 - Realtime-specific validation rules
 - Supports multiple minute ranges
@@ -36,8 +36,11 @@ The system combines **LLM-based reasoning**, **rule-based fallbacks**, and **str
 - Extendable to multiple agents (SEO Agent, etc.)
 
 ---
+### Sequential Data Flow Diagram
+<img width="9420" height="5150" alt="SequenceFlow Diagram" src="https://github.com/user-attachments/assets/1ee02a09-5590-4add-991f-34a971048edb" />
 
 ## Architecture Overview
+<img width="3322" height="4525" alt="GA4 Intent-Driven Report-2025-12-19-060625" src="https://github.com/user-attachments/assets/33d07c99-e769-465c-af8d-554fe2256e52" />
 
 **Request Flow**
 1. Natural language query received via API
