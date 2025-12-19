@@ -54,18 +54,20 @@ The system combines **LLM-based reasoning**, **rule-based fallbacks**, and **str
 ---
 
 ## 📁 Repository Structure
+
 .
 ├── app/
-│ ├── main.py # FastAPI entry point
-│ ├── nl_parser.py # LLM + rule-based query parsing
-│ ├── ga4_client.py # Core & realtime GA4 execution
-│ ├── ga4_schema_validator.py # Metadata-based validation + auto-repair
-│ ├── summarizer.py # LLM-based analytics summarization
-│ └── validator.py # Lightweight static checks
-├── credentials.json # GA4 credentials (replaced during evaluation)
+│   ├── main.py                
+│   ├── nl_parser.py           
+│   ├── ga4_client.py           
+│   ├── ga4_schema_validator.py 
+│   ├── summarizer.py           
+│   └── validator.py            
+├── credentials.json           
 ├── requirements.txt
 ├── deploy.sh
 └── README.md
+
 
 
 ---
