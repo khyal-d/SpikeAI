@@ -1,0 +1,7 @@
+fastapi[all]
+uvicorn
+google-analytics-data
+google-auth
+openai
+loguru
+dotenv

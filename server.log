@@ -1,0 +1,194 @@
+INFO:     Started server process [80744]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+INFO:     127.0.0.1:46450 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46450 - "GET /openapi.json HTTP/1.1" 200 OK
+2025-12-19 12:37:40.163 | INFO     | app.nl_parser:llm_parse:17 - LLM Parse Running
+2025-12-19 12:37:40.164 | INFO     | app.nl_parser:llm_parse:19 - Client Initialized
+2025-12-19 12:37:40.165 | INFO     | app.nl_parser:llm_parse:90 - prompt is :- 
+        You are a Google Analytics 4 (GA4) query parsing agent.
+
+Your task is to convert a natural-language analytics question into a
+STRUCTURED, GA4-EXECUTABLE QUERY.
+
+You MUST follow GA4 Data API semantics.
+
+----------------------------------
+INPUT
+----------------------------------
+Natural language query:
+Give me a daily breakdown of page views, users, and sessions for the /pricing page over the last 14 days and summarize trends.
+
+----------------------------------
+WHAT TO EXTRACT
+----------------------------------
+
+1. METRICS:- Metrics provide quantitative measurements of user behavior and performance, including users, sessions, engagement, conversions, revenue, and e-commerce.
+- Return ONLY GA4 Data API metric names (camelCase)
+- Examples:
+  screenPageViews, totalUsers, activeUsers, sessions,
+  engagementRate, eventCount, purchaseRevenue
+- If multiple metrics are requested, include ALL of them
+- DO NOT invent metrics
+
+2. DIMENSIONS:- Dimensions represent attributes of your data, categorized into areas like user/event information, audience, campaigns, devices, Country and various advertising platform data.
+- Return ONLY GA4 Data API dimension names
+- Examples:
+  date, pagePath, pageTitle, eventName, country, browser, deviceCategory
+- Include time dimensions (date, week, month) when time-series is implied
+- DO NOT invent dimensions
+
+3. DATE RANGE
+- Infer date range from the query
+- Return as number of days (integer)
+- If no range is specified, default to last 7 days
+
+4. FILTERS (optional)
+- Extract page path if mentioned (e.g. /pricing, /home)
+- ONLY include exact page paths
+- Do NOT infer query strings
+
+5. IS_REALTIME
+- Extract this flag as True/False based on context relating to realtime info
+- Some example realtime indicating keywords:-right now,last 30 minutes,live users,realtime,currently active
+
+----------------------------------
+RULES (STRICT)
+----------------------------------
+- Output MUST be valid JSON
+- DO NOT include markdown
+- DO NOT include explanations
+- DO NOT include extra fields
+- DO NOT guess unsupported GA4 fields
+- Preserve user intent as much as possible
+
+----------------------------------
+OUTPUT FORMAT (STRICT)
+----------------------------------
+{
+  "metrics": ["screenPageViews", "totalUsers"],
+  "dimensions": ["date"],
+  "days": 14,
+  "page_path": "/pricing",
+  "is_realtime":"False",
+  "minute_ranges:["20"]
+}
+If you are unsure about a metric or dimension, OMIT it rather than guessing.
+        
+2025-12-19 12:37:48.899 | INFO     | app.nl_parser:llm_parse:96 - Response:ChatCompletion(id='vflEaY2nEanuseMP1OXCiAM', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\n{\n  "metrics": [\n    "screenPageViews",\n    "totalUsers",\n    "sessions"\n  ],\n  "dimensions": [\n    "date"\n  ],\n  "days": 14,\n  "page_path": "/pricing",\n  "is_realtime": "False"\n}\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1766128061, model='gemini-2.5-pro', object='chat.completion', service_tier=None, system_fingerprint=None, usage=CompletionUsage(completion_tokens=835, prompt_tokens=577, total_tokens=1412, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=756, rejected_prediction_tokens=None, text_tokens=79), prompt_tokens_details=PromptTokensDetails(audio_tokens=None, cached_tokens=None, text_tokens=577))) and model used is gemini-2.5-pro
+2025-12-19 12:37:48.900 | INFO     | app.nl_parser:parse_query:112 - Got query response from LLM
+2025-12-19 12:37:48.901 | INFO     | app.ga4_schema_validator:validate_with_auto_repair:331 - Identified Mode is realtime
+2025-12-19 12:37:48.902 | INFO     | app.ga4_schema_validator:validate_with_auto_repair:341 - GA4BaseValidationError is raised
+2025-12-19 12:37:48.902 | INFO     | app.ga4_schema_validator:build_repair_prompt:244 - The Repair Prompt is building
+2025-12-19 12:37:48.902 | INFO     | app.ga4_schema_validator:llm_repair_query:306 - The Repair prompt is generated, 
+You are a Google Analytics 4 query repair agent repairing REALTIME query.
+
+The GA4 query below is INVALID.
+
+Reason:
+Metric 'totalUsers' is not supported in GA4 Realtime reports
+
+Metrics:
+['screenPageViews', 'totalUsers', 'sessions']
+
+Dimensions:
+['date']
+
+VALID METRICS:
+['keyEvents', 'activeUsers', 'eventCount', 'screenPageViews']
+
+VALID DIMENSIONS:
+['unifiedScreenName', 'platform', 'audienceId', 'deviceCategory', 'country', 'streamName', 'audienceResourceName', 'countryId', 'city', 'eventName', 'appVersion', 'streamId', 'minutesAgo', 'cityId', 'audienceName']
+
+Invalid error:
+Metric 'totalUsers' is not supported in GA4 Realtime reports
+
+Rules:
+- ONLY return fields supported by GA4 REALTIME reports
+- Use ONLY valid metrics and dimensions
+- Ensure compatibility
+- Preserve original intent
+- Prefer removing invalid dimensions over changing metrics
+IMPORTANT:
+GA4 metric names MUST match the GA4 Data API exactly.
+
+Examples:
+- Use "ecommercePurchases" NOT "purchases"
+- Use "eventsPerSession" NOT "eventCountPerSession"
+- Use "screenPageViews" NOT "pageViews"
+- Use "keyEvents" NOT "conversions"
+
+If unsure, choose the closest valid GA4 metric.
+Return STRICT JSON ONLY.
+
+Format:
+{
+  "metrics": [...],
+  "dimensions": [...]
+}
+
+2025-12-19 12:38:02.594 | INFO     | app.ga4_schema_validator:llm_repair_query:313 - Model used is gemini-2.5-pro with response is ChatCompletion(id='xflEae_cAp6MnesP28SVwA0', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\n{\n  "metrics": [\n    "screenPageViews",\n    "activeUsers"\n  ],\n  "dimensions": [\n    "minutesAgo"\n  ]\n}\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1766128068, model='gemini-2.5-pro', object='chat.completion', service_tier=None, system_fingerprint=None, usage=CompletionUsage(completion_tokens=1507, prompt_tokens=325, total_tokens=1832, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=1462, rejected_prediction_tokens=None, text_tokens=45), prompt_tokens_details=PromptTokensDetails(audio_tokens=None, cached_tokens=None, text_tokens=325)))
+2025-12-19 12:38:02.595 | INFO     | app.ga4_schema_validator:validate_with_auto_repair:331 - Identified Mode is realtime
+2025-12-19 12:38:02.595 | INFO     | app.main:analytics_query:44 - Validataion of metrics and dimensions is completed
+2025-12-19 12:38:02.827 | INFO     | app.ga4_client:run_realtime_report:60 - Request is property: "properties/516806940"
+dimensions {
+  name: "minutesAgo"
+}
+metrics {
+  name: "screenPageViews"
+}
+metrics {
+  name: "activeUsers"
+}
+minute_ranges {
+  start_minutes_ago: 29
+  end_minutes_ago: 0
+}
+
+2025-12-19 12:38:04.391 | INFO     | app.ga4_client:run_realtime_report:62 - Response of realtime report looks like dimension_headers {
+  name: "minutesAgo"
+}
+metric_headers {
+  name: "screenPageViews"
+  type_: TYPE_INTEGER
+}
+metric_headers {
+  name: "activeUsers"
+  type_: TYPE_INTEGER
+}
+kind: "analyticsData#runRealtimeReport"
+
+2025-12-19 12:38:04.391 | INFO     | app.summarizer:summarize:6 - LLM Parse Running
+2025-12-19 12:38:04.472 | INFO     | app.summarizer:summarize:13 - Client Initialized
+2025-12-19 12:38:04.473 | INFO     | app.summarizer:summarize:66 - prompt is :- 
+        You are a senior data analyst specializing in Google Analytics 4 (GA4).
+
+Your task is to analyze GA4 report results and produce a concise, business-ready natural language summary.
+
+You will be given:
+- The original user query (natural language) : Give me a daily breakdown of page views, users, and sessions for the /pricing page over the last 14 days and summarize trends.
+- The GA4 report data (time-series and/or aggregate values): []
+- The metrics, dimensions, and date range used: [['screenPageViews', 'activeUsers'], ['minutesAgo'], [(29, 0)]]
+
+Your responsibilities:
+1. Identify overall trends (increasing, decreasing, flat)
+2. Highlight significant spikes, drops, or anomalies
+3. Compare start vs end of period when time-series data exists
+4. Call out notable patterns related to dimensions (e.g. page path, country, device)
+5. Keep explanations factual and grounded strictly in the provided data
+6. Do NOT speculate beyond the data
+
+Constraints:
+- Do NOT mention internal implementation details
+- Do NOT restate raw numbers unless necessary
+- Use clear, non-technical language suitable for business stakeholders
+- If data is insufficient to infer trends, explicitly say so
+
+Return STRICT JSON ONLY in the following format:
+
+{'summary': 'High-level explanation of overall performance and trends', 'trends': [{'metric': '<metric_name>', 'direction': 'up | down | flat | mixed', 'description': 'Short explanation of how this metric changed over time'}], 'anomalies': [{'metric': '<metric_name>', 'date': '<YYYY-MM-DD or range>', 'description': 'What was unusual and why it stands out'}], 'dimension_insights': [{'dimension': '<dimension_name>', 'value': '<dimension_value>', 'description': 'Notable observation tied to this dimension'}]}
+
+        
+2025-12-19 12:38:09.045 | INFO     | app.summarizer:summarize:72 - Response:ChatCompletion(id='1PlEaaiIJ4u2seMPwZ2kaA', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='```json\n{\n  "summary": "No data was returned for the requested report. Therefore, it\'s not possible to analyze trends or provide insights for page views, users, and sessions on the /pricing page over the last 14 days.",\n  "trends": [],\n  "anomalies": [],\n  "dimension_insights": []\n}\n```', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None))], created=1766128084, model='gemini-2.5-flash', object='chat.completion', service_tier=None, system_fingerprint=None, usage=CompletionUsage(completion_tokens=877, prompt_tokens=409, total_tokens=1286, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=798, rejected_prediction_tokens=None, text_tokens=79), prompt_tokens_details=PromptTokensDetails(audio_tokens=None, cached_tokens=None, text_tokens=409))) and model used is gemini-2.5-flash
+INFO:     127.0.0.1:46456 - "POST /query HTTP/1.1" 200 OK
