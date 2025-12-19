@@ -55,6 +55,7 @@ The system combines **LLM-based reasoning**, **rule-based fallbacks**, and **str
 
 ## 📁 Repository Structure
 
+```text
 .
 ├── app
 │   ├── main.py
@@ -67,7 +68,6 @@ The system combines **LLM-based reasoning**, **rule-based fallbacks**, and **str
 ├── requirements.txt
 ├── deploy.sh
 └── README.md
-
 
 
 ---
